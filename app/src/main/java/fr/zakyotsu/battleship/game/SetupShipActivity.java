@@ -8,11 +8,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Spinner;
-
-import java.util.Random;
+import android.widget.Toast;
 
 import fr.zakyotsu.battleship.R;
 import fr.zakyotsu.battleship.auth.AuthActivity;
+import fr.zakyotsu.battleship.game.offline.OfflineGameActivity;
 import fr.zakyotsu.battleship.utils.Utils;
 
 public class SetupShipActivity extends AppCompatActivity {
@@ -35,8 +35,6 @@ public class SetupShipActivity extends AppCompatActivity {
         Utils.generateGrid(preparationGrid, activity, Utils.GridType.PREPARATION);
     }
 
-
-
     public void btnDeleteAllBoats(View view) {
         //On supprime tous les bateaux du joueur
         AuthActivity.player.deleteAllBoats();
@@ -45,42 +43,24 @@ public class SetupShipActivity extends AppCompatActivity {
         Utils.generateGrid(preparationGrid, activity, Utils.GridType.PREPARATION);
     }
 
-    public void btnLaunchGame(View view) {
-        Intent intent = new Intent(activity, GameActivity.class);
-        startActivity(intent);
-        finish();
-    }
-
     public void btnPlaceAuto(View view) {
-        Random r = new Random();
         Player pl = AuthActivity.player;
 
-        //On supprime tous les bateaux du joueur
-        pl.deleteAllBoats();
+        //Tirage aléatoire des bateaux
+        Utils.randomDrawing(pl);
 
-        for(Utils.BoatType bt : Utils.BoatType.values()) {
-            for(int nbMax = 0; nbMax < bt.getMaxNumber(); nbMax++) {
-
-                //Direction aléatoire
-                Utils.Direction dir = Utils.Direction.fromInt(r.nextInt(2));
-
-                //Case aléatoire
-                int x = r.nextInt(Utils.GRID_SIZE);
-                int y = r.nextInt(Utils.GRID_SIZE);
-
-                while(!Utils.checkLocation(x, y, dir, bt.getSize(), pl)) {
-                    dir = Utils.Direction.fromInt(r.nextInt(2));
-                    x = r.nextInt(Utils.GRID_SIZE);
-                    y = r.nextInt(Utils.GRID_SIZE);
-                }
-
-                Boat boat = new Boat(bt, dir);
-                boat.setLocation(new Location(x, y));
-
-                pl.addBoat(boat);
-            }
-        }
         //On dessine les bateaux du joueur dans la vue concernée
-        Utils.drawBoats(pl, activity, preparationGrid, Utils.GridType.PREPARATION);
+        Utils.renderBoats(pl, activity, preparationGrid, Utils.GridType.PREPARATION);
+    }
+
+    public void btnLaunchGame(View view) {
+        if(AuthActivity.player.getBoats().size() == 0) {
+            Toast.makeText(this, "Positionnez vos bateaux avant!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Intent intent = new Intent(activity, OfflineGameActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

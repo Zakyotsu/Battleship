@@ -6,11 +6,15 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.gridlayout.widget.GridLayout;
 
+import java.util.Random;
+
 import fr.zakyotsu.battleship.R;
 import fr.zakyotsu.battleship.game.Boat;
+import fr.zakyotsu.battleship.game.offline.OfflineGameActivity;
 import fr.zakyotsu.battleship.game.Location;
 import fr.zakyotsu.battleship.game.Player;
 
@@ -57,6 +61,10 @@ public class Utils {
         ENEMY, ALLY, PREPARATION
     }
 
+    public enum Result {
+        MISS, HIT
+    }
+
     /**
      * Permet de générer la grille du jeu
      * @param activity L'activité correspondante de l'application
@@ -80,7 +88,7 @@ public class Utils {
                 displaySize = displayMetrics.widthPixels;
                 break;
         }
-        double boxSize = Math.floor((displaySize / Utils.GRID_SIZE)/10.0D) * 10;
+        double boxSize = Math.floor((displaySize / Utils.GRID_SIZE) / 10.0D) * 10;
 
         //Mise en place des TextView
         for (int i = 0; i < Utils.GRID_SIZE; i++){
@@ -108,6 +116,39 @@ public class Utils {
                 box.setLayoutParams(glp);
 
                 view.addView(box);
+            }
+        }
+    }
+
+    /**
+     * Tirage des bateaux aléatoirement
+     */
+    public static void randomDrawing(Player p) {
+        Random r = new Random();
+
+        //On supprime tous les bateaux du joueur
+        p.deleteAllBoats();
+
+        for(Utils.BoatType bt : Utils.BoatType.values()) {
+            for(int nbMax = 0; nbMax < bt.getMaxNumber(); nbMax++) {
+
+                //Direction aléatoire
+                Utils.Direction dir = Utils.Direction.fromInt(r.nextInt(2));
+
+                //Case aléatoire
+                int x = r.nextInt(Utils.GRID_SIZE);
+                int y = r.nextInt(Utils.GRID_SIZE);
+
+                while(!checkLocation(x, y, dir, bt.getSize(), p)) {
+                    dir = Utils.Direction.fromInt(r.nextInt(2));
+                    x = r.nextInt(Utils.GRID_SIZE);
+                    y = r.nextInt(Utils.GRID_SIZE);
+                }
+
+                Boat boat = new Boat(bt, dir);
+                boat.setLocation(new Location(x, y));
+
+                p.addBoat(boat);
             }
         }
     }
@@ -167,7 +208,7 @@ public class Utils {
      * @param view La vue de la grille
      * @param type Le type de grille
      */
-    public static void drawBoats(Player pl, Activity activity, GridLayout view,  GridType type) {
+    public static void renderBoats(Player pl, Activity activity, GridLayout view, GridType type) {
         //Régénération de la grille
         generateGrid(view, activity, type);
 
@@ -189,6 +230,29 @@ public class Utils {
                 if(tv != null) tv.setBackgroundColor(Color.parseColor(boat.getType().getColor()));
             }
     }
+
+
+
+
+    /*
+    public static void checkWinner() {
+        //Récupération du nb total de bateaux
+        int maxBoats = 0;
+        for(BoatType type : BoatType.values()) {
+            maxBoats += type.getMaxNumber();
+        }
+
+        //Vérification du nb de bateaux coulés
+        for(Player pl : OfflineGameActivity.players) {
+            int nbSunk = 0;
+            for(Boat b : pl.getBoats()) {
+                if(b.isSunk()) nbSunk++;
+            }
+            if(nbSunk == maxBoats) {
+
+            }
+        }
+    }*/
 
 
 

@@ -17,10 +17,18 @@ public class Boat {
     //Direction du bateau
     private Utils.Direction dir;
 
+    //Nb de coups
+    private int hits;
+
+    //Coulé?
+    private boolean isSunk;
+
     public Boat(Utils.BoatType type, Utils.Direction dir) {
         this.locations = new ArrayList<>();
         this.type = type;
         this.dir = dir;
+        this.hits = 0;
+        this.isSunk = false;
     }
 
     public ArrayList<Location> getLocations() {
@@ -53,7 +61,20 @@ public class Boat {
         return type;
     }
 
-    public Utils.Direction getDirection() {
-        return dir;
+    public void setSunk(boolean b) {
+        isSunk = b;
+    }
+
+    public boolean isSunk() {
+        return isSunk;
+    }
+
+    public void hit() {
+        hits++;
+        if(hits >= type.getSize()) isSunk = true;
+    }
+
+    public int getNumberOfHits() {
+        return hits;
     }
 }
