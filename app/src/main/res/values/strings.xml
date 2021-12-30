@@ -1,0 +1,41 @@
+<resources>
+    <string name="app_name">Bataille navale</string>
+
+    <string name="no_account">Pas encore de compte ?</string>
+    <string name="register">S\'enregistrer</string>
+    <string name="confirm_password">Confirmer le mot de passe</string>
+    <string name="display_name">Nom d\'utilisateur</string>
+
+    <string name="connected_as">Connecté(e) en tant que : %usn</string>
+    <string name="validate">Valider</string>
+    <string name="login_button">Se connecter</string>
+    <string name="username">Identifiant de connexion</string>
+    <string name="password">Mot de passe</string>
+    <string name="password_forgot">Mot de passe oublié ?</string>
+
+    <string name="auth_success">Connection effectuée !</string>
+    <string name="auth_failure">Nom d\'utilisateur et/ou mot de passe incorrect(s).</string>
+
+
+    <string name="your_turn">C\'est ton tour</string>
+    <string name="enemy_turn">Tour de l\'adversaire</string>
+    <string name="placement">Placement</string>
+    <string name="auto_placement">Placer auto</string>
+    <string name="validate_placement">Lancer partie</string>
+    <string name="validate_placement_boat">Valider bateau</string>
+    <string name="delete_all_boats">Tout suppr</string>
+
+    <string-array name="boat_types">
+        <item>Bateau 4 cases</item>
+        <item>Bateau 3 cases</item>
+        <item>Bateau 2 cases</item>
+        <item>Bateau 1 case</item>
+    </string-array>
+
+    <string-array name="direction">
+        <item>Horizontal</item>
+        <item>Vertical</item>
+    </string-array>
+
+
+</resources>
