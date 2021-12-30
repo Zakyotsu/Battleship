@@ -4,19 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.gridlayout.widget.GridLayout;
 
 import android.app.Activity;
-import android.content.Context;
-import android.graphics.Color;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.Random;
-import java.util.Set;
 
 import fr.zakyotsu.battleship.R;
 import fr.zakyotsu.battleship.auth.AuthActivity;
@@ -24,7 +17,7 @@ import fr.zakyotsu.battleship.utils.Utils;
 
 public class SetupShipActivity extends AppCompatActivity {
 
-    private GridLayout boardView;
+    private GridLayout preparationGrid;
     private Spinner boatTypeSpinner, directionSpinner;
     private Activity activity;
 
@@ -35,11 +28,11 @@ public class SetupShipActivity extends AppCompatActivity {
 
         activity = this;
 
-        boardView = findViewById(R.id.boardGrid);
+        preparationGrid = findViewById(R.id.preparationGrid);
         boatTypeSpinner = findViewById(R.id.boatTypeSpinner);
         directionSpinner = findViewById(R.id.directionSpinner);
 
-        Utils.generateGridBoard(boardView, this);
+        Utils.generateGrid(preparationGrid, activity, Utils.GridType.PREPARATION);
     }
 
 
@@ -48,12 +41,14 @@ public class SetupShipActivity extends AppCompatActivity {
         //On supprime tous les bateaux du joueur
         AuthActivity.player.deleteAllBoats();
 
-        //On régénère la grille
-        Utils.generateGridBoard(boardView, activity);
+        //On régénère la grille de préparation
+        Utils.generateGrid(preparationGrid, activity, Utils.GridType.PREPARATION);
     }
 
     public void btnLaunchGame(View view) {
-
+        Intent intent = new Intent(activity, GameActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     public void btnPlaceAuto(View view) {
@@ -70,13 +65,13 @@ public class SetupShipActivity extends AppCompatActivity {
                 Utils.Direction dir = Utils.Direction.fromInt(r.nextInt(2));
 
                 //Case aléatoire
-                int x = r.nextInt(Utils.GRID_COLUMNS);
-                int y = r.nextInt(Utils.GRID_ROWS);
+                int x = r.nextInt(Utils.GRID_SIZE);
+                int y = r.nextInt(Utils.GRID_SIZE);
 
                 while(!Utils.checkLocation(x, y, dir, bt.getSize(), pl)) {
                     dir = Utils.Direction.fromInt(r.nextInt(2));
-                    x = r.nextInt(Utils.GRID_COLUMNS);
-                    y = r.nextInt(Utils.GRID_ROWS);
+                    x = r.nextInt(Utils.GRID_SIZE);
+                    y = r.nextInt(Utils.GRID_SIZE);
                 }
 
                 Boat boat = new Boat(bt, dir);
@@ -86,6 +81,6 @@ public class SetupShipActivity extends AppCompatActivity {
             }
         }
         //On dessine les bateaux du joueur dans la vue concernée
-        Utils.drawBoats(pl, activity, boardView);
+        Utils.drawBoats(pl, activity, preparationGrid, Utils.GridType.PREPARATION);
     }
 }

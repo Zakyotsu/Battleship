@@ -1,28 +1,22 @@
 package fr.zakyotsu.battleship.utils;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Color;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.gridlayout.widget.GridLayout;
 
-import org.w3c.dom.Text;
-
 import fr.zakyotsu.battleship.R;
-import fr.zakyotsu.battleship.auth.AuthActivity;
 import fr.zakyotsu.battleship.game.Boat;
 import fr.zakyotsu.battleship.game.Location;
 import fr.zakyotsu.battleship.game.Player;
 
 public class Utils {
 
-    public static int GRID_ROWS = 10;
-    public static int GRID_COLUMNS = 10;
+    public static int GRID_SIZE = 10;
 
     public enum Direction {
         HORIZONTAL, VERTICAL;
@@ -59,61 +53,74 @@ public class Utils {
         }
     }
 
-
-
-    public static boolean checkNoSpecialChars(EditText et) {
-        return et.getText().toString().matches("^[a-zA-Z0-9]*$");
-    }
-
-    public static boolean checkBothPasswords(EditText et, EditText et1) {
-        return et.getText().toString().equals(et1.getText().toString());
+    public enum GridType {
+        ENEMY, ALLY, PREPARATION
     }
 
     /**
-     * Permet de générer la grille du jeu dans le GridLayout correspondant
+     * Permet de générer la grille du jeu
      * @param activity L'activité correspondante de l'application
+     * @param view Le GridLayout où sera dessiné la grille
+     * @param type Le type de Grille, ici ALLY, PREPARATION, ou ENEMY.
      */
-    public static void generateGridBoard(GridLayout boardView, Activity activity) {
+    public static void generateGrid(GridLayout view, Activity activity, GridType type) {
         TextView box;
-        GridLayout.LayoutParams glp = null;
+        GridLayout.LayoutParams glp;
         DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
 
-        boardView.removeAllViewsInLayout();
+        view.removeAllViewsInLayout();
 
-        //Tentative de supprimer les bordures mal faites...
-        int boxWidth = displayMetrics.widthPixels/ Utils.GRID_COLUMNS;
-        double boxWidthSize = Math.floor(boxWidth/10.0D) * 10;
-
-        int boxHeight = displayMetrics.widthPixels/Utils.GRID_ROWS;
-        double boxHeightSize = Math.floor(boxHeight/10.0D) * 10;
+        double displaySize = 0.0D;
+        switch(type) {
+            case ALLY:
+                displaySize = displayMetrics.widthPixels / 2.0D;
+                break;
+            case ENEMY:
+            case PREPARATION:
+                displaySize = displayMetrics.widthPixels;
+                break;
+        }
+        double boxSize = Math.floor((displaySize / Utils.GRID_SIZE)/10.0D) * 10;
 
         //Mise en place des TextView
-        for (int i = 0; i < Utils.GRID_COLUMNS; i++){
-            for (int j = 0; j < Utils.GRID_ROWS; j++){
+        for (int i = 0; i < Utils.GRID_SIZE; i++){
+            for (int j = 0; j < Utils.GRID_SIZE; j++){
                 glp = new GridLayout.LayoutParams(GridLayout.spec(i), GridLayout.spec(j));
 
                 box = new TextView(activity.getApplicationContext());
 
-                //IDs : 00 01 02 03... 10 11 12 13... 20 21 22 23...
-                box.setId(Integer.parseInt(i + "" + j));
+                //Si petite grille, l'ID aura un '1' devant
+                switch(type) {
+                    case ALLY:
+                        box.setId(Integer.parseInt("1" + i + "" + j));
+                        break;
+                    case ENEMY:
+                    case PREPARATION:
+                        box.setId(Integer.parseInt(i + "" + j));
+                        break;
+                }
 
-                box.setTag(i + "," + j);
-                box.setMinWidth((int) boxWidthSize);
-                box.setMinHeight((int) boxHeightSize);
-
-                box.setOnClickListener(l -> {
-                    System.out.println("Case: " + l.getId());
-                });
+                box.setWidth((int) boxSize);
+                box.setHeight((int) boxSize);
 
                 box.setGravity(Gravity.CENTER_VERTICAL|Gravity.CENTER_HORIZONTAL);
                 box.setBackgroundResource(R.drawable.borders);
                 box.setLayoutParams(glp);
 
-                boardView.addView(box);
+                view.addView(box);
             }
         }
     }
 
+    /**
+     * Vérifie qu'une coordonnée est libre ou non
+     * @param x X
+     * @param y Y
+     * @param dir Direction
+     * @param size Taille
+     * @param pl Joueur
+     * @return Vrai si les coordonnées sont libres, Faux sinon
+     */
     public static boolean checkLocation(int x, int y, Utils.Direction dir, int size, Player pl) {
         for(int i = 0; i < size; i++) {
             int newX = x;
@@ -123,7 +130,7 @@ public class Utils {
                 case HORIZONTAL:
                     newY = y + i;
                     //Si Y en dehors de la grille
-                    if(newX >= Utils.GRID_COLUMNS || newY >= Utils.GRID_ROWS) return false;
+                    if(newX >= Utils.GRID_SIZE || newY >= Utils.GRID_SIZE) return false;
 
                     //On vérifie que X,Y ne soient pas déjà sur une case occupée
                     for(Boat b : pl.getBoats()) {
@@ -136,10 +143,9 @@ public class Utils {
                 case VERTICAL:
                     newX = x + i;
                     //Si X en dehors de la grille
-                    if(newX >= Utils.GRID_COLUMNS || newY >= Utils.GRID_ROWS) {
+                    if(newX >= Utils.GRID_SIZE || newY >= Utils.GRID_SIZE) {
                         return false;
                     }
-
 
                     //On vérifie que X,Y ne soient pas déjà sur une case occupée
                     for(Boat b : pl.getBoats()) {
@@ -154,17 +160,46 @@ public class Utils {
         return true;
     }
 
-    public static void drawBoats(Player pl, Activity activity, GridLayout boardView) {
-        generateGridBoard(boardView, activity);
-        for(Boat boat : pl.getBoats()) {
+    /**
+     * Dessine les bateaux dans la grille définie
+     * @param pl Joueur
+     * @param activity Activité
+     * @param view La vue de la grille
+     * @param type Le type de grille
+     */
+    public static void drawBoats(Player pl, Activity activity, GridLayout view,  GridType type) {
+        //Régénération de la grille
+        generateGrid(view, activity, type);
+
+        for(Boat boat : pl.getBoats())
             for(Location location : boat.getLocations()) {
                 int x = location.getX();
                 int y = location.getY();
-                TextView tv = activity.findViewById(Integer.parseInt(x + "" + y));
+                TextView tv = null;
+                switch(type) {
+                    case ALLY:
+                        tv = activity.findViewById(Integer.parseInt("1" + x + "" + y));
+                        break;
+                    case ENEMY:
+                    case PREPARATION:
+                        tv = activity.findViewById(Integer.parseInt(x + "" + y));
+                        break;
+                }
+
                 if(tv != null) tv.setBackgroundColor(Color.parseColor(boat.getType().getColor()));
-                else Log.d("Utils: ", "No view found for: x=" + x + ", y=" + y);
             }
-        }
     }
 
+
+
+
+
+
+    public static boolean checkNoSpecialChars(EditText et) {
+        return et.getText().toString().matches("^[a-zA-Z0-9]*$");
+    }
+
+    public static boolean checkBothPasswords(EditText et, EditText et1) {
+        return et.getText().toString().equals(et1.getText().toString());
+    }
 }

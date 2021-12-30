@@ -24,6 +24,8 @@
         </activity>
 
         <activity android:name=".game.SetupShipActivity" />
+
+        <activity android:name=".game.GameActivity" />
     </application>
 
 </manifest>

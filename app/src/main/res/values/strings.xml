@@ -25,11 +25,16 @@
     <string name="validate_placement_boat">Valider bateau</string>
     <string name="delete_all_boats">Tout suppr</string>
 
+
+    <string name="enemy_infos">Infos de l\'ennemi</string>
+
+
+
     <string-array name="boat_types">
-        <item>Bateau 4 cases</item>
-        <item>Bateau 3 cases</item>
-        <item>Bateau 2 cases</item>
-        <item>Bateau 1 case</item>
+        <item>4 cases</item>
+        <item>3 cases</item>
+        <item>2 cases</item>
+        <item>1 case</item>
     </string-array>
 
     <string-array name="direction">
